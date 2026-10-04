@@ -68,6 +68,25 @@ class MainActivity : ComponentActivity() {
                             viewModel = viewModel,
                             onNavigateBack = {
                                 navController.popBackStack()
+                            },
+                            onEditClick = { editId ->
+                                navController.navigate("edit/$editId")
+                            }
+                        )
+                    }
+
+                    composable(
+                        route = "edit/{cardId}",
+                        arguments = listOf(
+                            navArgument("cardId") { type = NavType.LongType }
+                        )
+                    ) { backStackEntry ->
+                        val cardId = backStackEntry.arguments?.getLong("cardId") ?: -1L
+                        AddCardScreen(
+                            viewModel = viewModel,
+                            cardIdToEdit = cardId,
+                            onNavigateBack = {
+                                navController.popBackStack()
                             }
                         )
                     }

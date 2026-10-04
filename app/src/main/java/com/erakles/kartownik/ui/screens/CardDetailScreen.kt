@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.*
@@ -36,7 +37,8 @@ import kotlinx.coroutines.launch
 fun CardDetailScreen(
     cardId: Long,
     viewModel: CardViewModel,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onEditClick: (Long) -> Unit
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -113,6 +115,9 @@ fun CardDetailScreen(
                                 tint = if (currentCard.isFavorite) Color(0xFFFFD700) else MaterialTheme.colorScheme.onSurface
                             )
                         }
+                    }
+                    IconButton(onClick = { onEditClick(cardId) }) {
+                        Icon(Icons.Default.Edit, contentDescription = "Edytuj kartę")
                     }
                     IconButton(onClick = { showDeleteDialog = true }) {
                         Icon(Icons.Default.Delete, contentDescription = "Usuń kartę", tint = MaterialTheme.colorScheme.error)

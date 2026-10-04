@@ -29,6 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.erakles.kartownik.data.model.CardEntity
 import com.erakles.kartownik.data.model.StorePresets
 import com.erakles.kartownik.ui.components.BarcodeCardView
 import com.erakles.kartownik.ui.components.CameraBarcodeScanner
@@ -38,14 +39,29 @@ import com.erakles.kartownik.ui.viewmodel.CardViewModel
 @Composable
 fun AddCardScreen(
     viewModel: CardViewModel,
+    cardIdToEdit: Long? = null,
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
+    var existingCard by remember { mutableStateOf<CardEntity?>(null) }
     var storeName by remember { mutableStateOf("") }
     var cardNumber by remember { mutableStateOf("") }
     var barcodeFormat by remember { mutableStateOf("CODE_128") }
     var selectedColor by remember { mutableStateOf(StorePresets.COLOR_PALETTE[0]) }
     var note by remember { mutableStateOf("") }
+
+    LaunchedEffect(cardIdToEdit) {
+        if (cardIdToEdit != null && cardIdToEdit > 0) {
+            viewModel.getCardById(cardIdToEdit)?.let { c ->
+                existingCard = c
+                storeName = c.storeName
+                cardNumber = c.cardNumber
+                barcodeFormat = c.barcodeFormat
+                selectedColor = c.colorHex
+                note = c.note
+            }
+        }
+    }
 
     var isScanningCamera by remember { mutableStateOf(false) }
 
@@ -74,7 +90,7 @@ fun AddCardScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Dodaj nową kartę", fontWeight = FontWeight.Bold) },
+                title = { Text(if (cardIdToEdit != null) "Edytuj kartę" else "Dodaj nową kartę", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Wróć")
@@ -253,13 +269,25 @@ fun AddCardScreen(
             Button(
                 onClick = {
                     if (storeName.isNotBlank() && cardNumber.isNotBlank()) {
-                        viewModel.addCard(
-                            storeName = storeName,
-                            cardNumber = cardNumber,
-                            barcodeFormat = barcodeFormat,
-                            colorHex = selectedColor,
-                            note = note
-                        )
+                        if (existingCard != null) {
+                            viewModel.updateCard(
+                                existingCard!!.copy(
+                                    storeName = storeName.trim(),
+                                    cardNumber = cardNumber.trim(),
+                                    barcodeFormat = barcodeFormat,
+                                    colorHex = selectedColor,
+                                    note = note.trim()
+                                )
+                            )
+                        } else {
+                            viewModel.addCard(
+                                storeName = storeName,
+                                cardNumber = cardNumber,
+                                barcodeFormat = barcodeFormat,
+                                colorHex = selectedColor,
+                                note = note
+                            )
+                        }
                         onNavigateBack()
                     }
                 },
@@ -269,7 +297,11 @@ fun AddCardScreen(
                     .height(52.dp),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Zapisz kartę w portfelu", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    text = if (existingCard != null) "Zapisz zmiany" else "Zapisz kartę w portfelu",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }

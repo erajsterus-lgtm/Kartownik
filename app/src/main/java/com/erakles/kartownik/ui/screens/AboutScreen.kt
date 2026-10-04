@@ -73,7 +73,7 @@ fun AboutScreen(
             )
 
             Text(
-                text = "Wersja 1.0.0",
+                text = "Wersja 1.1.0",
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
